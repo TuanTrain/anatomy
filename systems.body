@@ -1,0 +1,250 @@
+cell Somatic():
+	state = [G0 | G1 | S | G2 | Meiosis]
+	chromosomes.from_dad = 23
+	chromosomes.from_mom = 23
+
+	membrane.lipid_layers = 2
+	membrane += proteins
+	membrane += cholesterol
+
+	function glycolysis()
+
+	function live():
+		case state:
+			G0 -> 
+				continue
+			G1 -> 
+				grow
+				state = S
+			S -> 
+				self.nucleus.duplicate_DNA
+				state = G2
+			G2 -> 
+				grow
+				state = Meiosis
+			Meiosis ->
+				self.nucleus.meiosis
+				daughter1, daughter2 = self.cytokenesis
+				daugter1.live(state = G1)
+				daugter2.live(state = G1)
+
+	organelle Nucleus:
+		DNA.base_pairs_per_chromosome_set = 3 billion
+
+		membrane.lipid_layers = 2
+
+		function transcribe_DNA(chromosome, position, transcription_factor, enhancer):
+			transcription_rate = 1
+			if enhancer == True:
+				transcription_rate += 1
+
+			if transcription_factor == True:
+				transcribe(chromosome, position)
+
+		function duplicate_DNA():
+			unwind_DNA()
+			polymerize_strands()
+
+		function meiosis():
+			if DNA != duplicated:
+				continue
+			prophase()
+			metaphase()
+			anaphase()
+			telophase()
+
+		sub_organelle Nucleolus:
+			function make_ribosomes(RNA)
+
+	organelle Smooth_endoplasmic_reticulum:
+		membrane.lipid_layers = 1
+
+		function make_lipids()
+
+
+	organelle Rough_endoplasmic_reticulum:
+		membrane.lipid_layers = 1
+		membrane.hold += ribsomes
+
+		function make_proteins()
+
+	organelle Golgi_apparatus:
+		face.cis.toward = nucleus
+		face.trans.toward = cell_membrane
+
+		function package_proteins(protein):
+			protein.glycosylation()
+
+	organelle lysosome:
+		membrane.lipid_layers = 1
+
+		function digest_with_acid()
+
+	organelle peroxysome:
+		membrane.lipid_layers = 1
+
+		function digest_with_h2o2()
+
+	organelle mitochondria:
+		membrane.lipid_layers = 1
+
+		function citric_acid_cycle()
+		function electron_transport_chain()
+		function ATP_synthesis()
+
+tissue Epithelial():
+	shape = [squamous | cuboidal | columnar | transitional]
+	organization = [simple | stratified | psuedo_stratified]
+
+	bool ciliated
+
+	function connect(external_environment, internal_environment)
+
+tissue Connective():
+	organ bone
+	organ cartilage
+	organ blood
+	organ fat
+
+tissue Nervous():
+	cell Neuron(Somatic):
+		function action_potential()
+
+	cell microglia(Somatic):
+		function immune_defense()
+
+	cell astrocyte(Somatic):
+		function support_neurons()
+
+	cell oligodendrite(Somatic):
+		function make_myelin(central_nervous_system, multiple_neurons)
+
+	cell Schwann_cells(Somatic):
+		function make_myelin(peripheral_nervous_system, one_neuron)
+
+tissue Muscle():
+	cell skeletal_muscle = striated, multinucleated
+	cell smooth_muscle
+	cell cardiac_muscle = striated
+
+system Nervous():
+	organ brain
+	organ spine
+
+	tissue Nervous
+
+	cells.mitochondria++
+
+	function consciousness()
+	function autonomic()
+
+	function sleep():
+		while sleeping == true:
+			stage1()
+			stage2()
+			stage3()
+			stage4()
+			REM()
+
+	system central_nervous_system():
+		organ brain, spine
+
+	system peripheral_nervous_system():
+		system somatic_nervous_system():
+			control = voluntary
+			function somatosensory()
+				nerves.send_signal()
+				brain.receive_signal()
+				
+			function motor()
+				brain.send_signal()
+				muscles.receive_signal()
+
+		system automatic_nervous_system():
+			system sympathetic()
+			system parasympathetic()
+
+system musclular():
+	join_system(skeletal)
+	join_system(nervous)
+
+	cells.mitochondria++
+
+	type = [fast_twitch | slow_twitch]
+
+	cell Muscle:
+		respond_to(nervous)
+	
+
+system skeletal():
+	organ bone
+
+	tendon.connect(muscle, bone)
+	ligament.connect(bone, bone)
+
+	cell osteoblast
+		function form(bone)
+		function respond_to(calcitonin):
+			activity ++
+
+	cell osteoclast():
+		function break_down(bone)
+		function respond_to(parathyroid_hormone):
+			activity ++		
+
+
+system digestive():
+	function absorb_nutrients():
+		food
+		|> mouth(salivate)
+		|> esophagus(peristalsis)
+		|> stomach(begin_digestion, secrete_enzymes)
+		|> small_intestine([duodenum, jejunum, ileum], gallbladder(bile_salts), pancreas(enzymes))
+		|> large_intestines(absorb_water)
+		|> rectum(storage)
+
+	if hungry == True:
+		stomach.secrete(gastrin)
+
+	if full == True:
+		adipose.secrete(leptin)
+
+system endocrine():
+	organ hypothalamus
+	organ anterior_pituitary
+	organ posterior_pituitary
+	organ thyroid
+	organ parathyroid
+	organ adrenal_gland
+	organ pancreas
+	organ ovaries
+	organ testes
+
+	function secrete_hormones()
+
+system immune():
+	types = [innate | adaptive]
+
+	function defend_against_pathogens():
+		pathogens = [bacteria | fungi | parasite | viral]
+
+system cardiovascular():
+	organ heart
+	organ lungs
+	organ circulatory
+	organ lymphatic
+
+system renal():
+	function homeostatsis(water, minerals)
+
+system reproductive():
+	cell gametes(Germline)
+
+system sensory():
+	organ eyes
+	organ skin
+	organ ears
+	organ tongue
+	organ nose
+
+	connect_to(Nervous)
